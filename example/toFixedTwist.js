@@ -1,20 +1,27 @@
-function toFixed(number, precision) {
+function toFixedTwist(number, precision) {
 
   // Check if number is not a number, and throw TypeError.
   if (isNaN(number)) {
-    throw new TypeError(`toFixed() requires that number be a Number (${number} is not a number).`);
+    throw new TypeError(`toFixedTwist() requires that number be a Number (${number} is not a number).`);
   }
 
   // Check if precision < 0 or precision > 100, and throw new RangeError.
   if (precision < 0 || precision > 100) {
-    throw new RangeError('toFixed() digits argument must be between 0 and 100');
+    throw new RangeError('toFixedTwist() digits argument must be between 0 and 100');
+  }
+
+  var result, holePart, fractionPart, newDecimalIndex,
+    isNegative = number < 0,
+    sign = '';
+
+  if (isNegative) {
+    number = -number;
+    sign = '-';
   }
 
   // Coerce number to string, get decimal index
   var numberAsString = number.toString();
   var decimalIndex = numberAsString.indexOf('.');
-  
-  var result, holePart, fractionPart, newDecimalIndex;
 
   // Get number's holePart, fractionPart
   if (decimalIndex === -1) {
@@ -57,6 +64,11 @@ function toFixed(number, precision) {
     result = result.split('');
     result.splice(holePart.length, 0, '.');
     result = result.join('');
+  }
+
+  // Add sign
+  if (result !== '0') {
+    result = sign + result;
   }
 
   return result;
