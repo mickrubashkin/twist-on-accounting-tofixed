@@ -1,75 +1,54 @@
 function toFixedTwist(number, precision) {
-
-  // Check if number is not a number, and throw TypeError.
+  
   if (isNaN(number)) {
     throw new TypeError(`toFixedTwist() requires that number be a Number (${number} is not a number).`);
   }
 
-  // Check if precision < 0 or precision > 100, and throw new RangeError.
   if (precision < 0 || precision > 100) {
     throw new RangeError('toFixedTwist() digits argument must be between 0 and 100');
   }
 
-  var result, holePart, fractionPart, newDecimalIndex,
-    isNegative = number < 0,
-    sign = '';
+  // Helper function
+  function hasDigits(digits) { return digits.length > 0; }
+  
+  var result = '';
 
-  if (isNegative) {
-    number = -number;
-    sign = '-';
+  // If precision === 0, just round number and return as string;
+  if (precision === 0) {
+    return (Math.round(number)).toString();
   }
 
-  // Coerce number to string, get decimal index
-  var numberAsString = number.toString();
-  var decimalIndex = numberAsString.indexOf('.');
+  // Get integer and fractional parts, fractional digits
+  var [integerPart, fractionalPart] = number.toString().split('.');
+  fractionalPart = fractionalPart || '';
+  var fractionalDigits = fractionalPart.split('');
+  var powedNum = integerPart;
+  var i = precision;
 
-  // Get number's holePart, fractionPart
-  if (decimalIndex === -1) {
-    holePart = numberAsString;
-    fractionPart = '';
-  } else {
-    holePart = numberAsString.substring(0, decimalIndex);
-    fractionPart = numberAsString.substring(decimalIndex + 1);
+  // Move decimal right precision times, pad with '0' if needed
+  while (i) {
+    powedNum += hasDigits(fractionalDigits) ? fractionalDigits.shift() : '0';
+    i--;
   }
 
-  // Get digits without decimal
-  result = numberAsString.replace(/\./, '');
-
-  // Add zeros to the end of the string if needed
-  if (precision > fractionPart.length) {
-    for (var i = 0; i < precision - fractionPart.length; i++) {
-      result += '0';
-    }
+  if (hasDigits(fractionalDigits)) {
+    powedNum += '.' + fractionalDigits.join('');
   }
 
-  // Add '.' if needed
-  if (precision < fractionPart.length) {
-    newDecimalIndex = decimalIndex + precision;
-    result = result.split('');
-    result.splice(newDecimalIndex, 0, '.');
-    result = result.join('');
+  // Add sign and leading zeros to the result
+  i = 0;
+  while (powedNum[i] === '-' || powedNum[i] === '0') {
+    result += powedNum[i];
+    i++;
   }
 
-  // Round result, coerce to string
-  result = Math.round(result).toString();
+  // Round and add decimal
+  var rounded = Math.abs(Math.round(powedNum)).toString();
+  result += rounded;
 
-  // Add zeros to the beginning of the string if needed
-  if (holePart === '0' && precision !== 0) {
-    result = result.replace(/\./, '');
-    result = '0' + result;
-  }
-
-  // Add '.' if needed
-  if (precision > 0) {
-    result = result.split('');
-    result.splice(holePart.length, 0, '.');
-    result = result.join('');
-  }
-
-  // Add sign
-  if (result !== '0') {
-    result = sign + result;
-  }
+  var digits = result.split('');
+  digits.splice(-precision, 0, '.');
+  result = digits.join('');
 
   return result;
 }
